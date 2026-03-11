@@ -1,0 +1,69 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+      - mongodb
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_container
+    restart: always
+    ports:
+      - "8084:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  dbgate:
+    image: dbgate/dbgate
+    container_name: dbgate_web
+    restart: always
+    ports:
+      - "8086:3000"
+    volumes:
+      - dbgate-data:/root/.dbgate
+    environment:
+      CONNECTIONS: con_mongo,con_mysql
+
+      LABEL_con_mongo: "AlloCiné NoSQL"
+      URL_con_mongo: "mongodb://mongodb_container:27017" # On utilise le container_name ici
+      ENGINE_con_mongo: "mongo@dbgate-plugin-mongo"
+      
+      LABEL_con_mysql: "AlloCiné SQL"
+      URL_con_mysql: "mysql://allocine_user:allocine_pass@mysql:3306/allocine"
+      ENGINE_con_mysql: "mysql@dbgate-plugin-mysql"
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: mysql
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:
+  mongo_data:
+  dbgate-data:
