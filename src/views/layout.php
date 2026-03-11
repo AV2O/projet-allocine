@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>AlloCiné</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/images/popcorn.png">
     <script src="/js/script.js" defer></script>
 </head>
 
