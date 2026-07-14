@@ -2,7 +2,6 @@ services:
   - type: web
     name: allocine
     env: php
-    publishPath: public
     envVars:
       - key: DB_HOST
         sync: false
