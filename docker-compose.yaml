@@ -2,7 +2,7 @@ services:
   app:
     build: .
     ports:
-      - "8080:80"
+      - "8002:80"
     volumes:
       - .:/var/www/html
     env_file:
@@ -57,7 +57,7 @@ services:
     image: phpmyadmin:latest
     restart: always
     ports:
-      - "8082:80"
+      - "8089:80"
     environment:
       PMA_HOST: mysql
     depends_on:
