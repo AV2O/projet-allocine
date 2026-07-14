@@ -3,22 +3,30 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 class Database {
     private static $instance = null;
-    private $pdo;    // Pour MySQL
-    private $mongo;  // Pour MongoDB
+    private $pdo;
+    private $mongo;
 
     private function __construct() {
-        // --- CONFIGURATION MYSQL ---
-        $host = getenv('DB_HOST') ?: 'mysql';
-        $dbname = getenv('DB_NAME') ?: 'allocine_db';
-        $user = getenv('DB_USER') ?: 'allocine_user';
-        $pass = getenv('DB_PASS') ?: 'allocine_pass';
+        // --- CONFIGURATION MYSQL (Aiven) ---
+        $host = getenv('DB_HOST');
+        $port = getenv('DB_PORT') ?: '3306'; // Défaut 3306 si non précisé
+        $dbname = getenv('DB_NAME');
+        $user = getenv('DB_USER');
+        $pass = getenv('DB_PASS');
 
         try {
-            $this->pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            // Ajout du port et des options SSL pour Aiven
+            $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                // Si Aiven demande une vérification SSL, tu peux avoir besoin de ceci :
+                // PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/ca-certificates.crt'
+            ];
+            $this->pdo = new PDO($dsn, $user, $pass, $options);
             
-            // Connection au service 'mongodb'
-            $this->mongo = new MongoDB\Client("mongodb://mongodb_container:27017");
+            // --- CONFIGURATION MONGODB (Atlas) ---
+            $mongoUri = getenv('MONGODB_URI');
+            $this->mongo = new MongoDB\Client($mongoUri);
             
         } catch (Exception $e) {
             die("Erreur de connexion : " . $e->getMessage());
@@ -30,13 +38,12 @@ class Database {
         return self::$instance;
     }
 
-    // films (SQL)
     public function getConnection() {
         return $this->pdo;
     }
 
-    // avis (NoSQL)
     public function getMongoConnection() {
-        return $this->mongo->selectDatabase('allocine_db');
+        // Récupère le nom de la base depuis l'URI ou force le nom
+        return $this->mongo->selectDatabase('allocine');
     }
 }
