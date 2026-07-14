@@ -1,4 +1,12 @@
 <?php
+
+// Test d'importation express
+if (file_exists('dump.sql')) {
+    $pdo = new PDO("mysql:host=" . getenv('DB_HOST') . ";port=" . getenv('DB_PORT') . ";dbname=" . getenv('DB_NAME'), getenv('DB_USER'), getenv('DB_PASS'));
+    $pdo->exec(file_get_contents('dump.sql'));
+    die("IMPORTATION FORCÉE ET RÉUSSIE ! Supprime ce code maintenant.");
+}
+
 session_start();
 
 require_once __DIR__ . '/../src/config/Database.php';
