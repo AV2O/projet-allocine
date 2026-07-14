@@ -2,6 +2,7 @@ services:
   - type: web
     name: allocine
     env: php
+    startCommand: heroku-php-apache2 public/
     envVars:
       - key: DB_HOST
         sync: false
