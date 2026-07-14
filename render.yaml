@@ -1,7 +1,7 @@
 services:
   - type: web
     name: allocine
-    runtime: php
+    env: php
     startCommand: heroku-php-apache2 public/
     envVars:
       - key: DB_HOST
@@ -12,4 +12,3 @@ services:
         sync: false
       - key: DB_PASS
         sync: false
-        
