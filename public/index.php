@@ -12,11 +12,18 @@ if (file_exists(__DIR__ . '/../dump.sql')) {
         $check = $pdo->query("SHOW TABLES LIKE 'films'");
         if ($check->rowCount() == 0) {
             $sql = file_get_contents(__DIR__ . '/../dump.sql');
-            $pdo->exec($sql);
-            die("IMPORTATION RÉUSSIE ! Rafraîchissez votre navigateur.");
+            $sql = preg_replace('/^--.*$/m', '', $sql);
+            $statements = array_filter(array_map('trim', explode(';', $sql)), fn($s) => $s !== '');
+
+            $count = 0;
+            foreach ($statements as $statement) {
+                $pdo->exec($statement);
+                $count++;
+            }
+            die("IMPORTATION RÉUSSIE ! ($count requêtes exécutées) Rafraîchissez votre navigateur.");
         }
     } catch (PDOException $e) {
-        // On ignore les erreurs ici pour laisser le reste du site charger si la DB est déjà prête
+        die("ERREUR IMPORT : " . $e->getMessage());
     }
 }
 
